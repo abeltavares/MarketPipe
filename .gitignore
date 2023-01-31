@@ -1,0 +1,49 @@
+# Airflow related files
+airflow-home/
+airflow-webserver.pid
+airflow-worker.pid
+
+# PostgreSQL related files
+*.sql
+*.sql.gz
+*.backup
+
+# Power BI Desktop temporary files
+*.pbix.autosave
+
+# Python cache files
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment files
+.env
+.venv/
+env/
+
+# Jupyter Notebook output files
+*.ipynb_checkpoints/
+
+# Package distribution files
+*.tar.gz
+*.whl
+*.zip
+
+# IDE configuration files
+.idea/
+*.iml
+
+# Operating System generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100/
+.Trashes/
+ehthumbs.db
+Thumbs.db
+
+# IPython history files
+.ipynb_checkpoints/
