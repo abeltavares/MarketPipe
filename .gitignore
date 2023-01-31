@@ -24,9 +24,6 @@ build/
 .venv/
 env/
 
-# Jupyter Notebook output files
-*.ipynb_checkpoints/
-
 # Package distribution files
 *.tar.gz
 *.whl
