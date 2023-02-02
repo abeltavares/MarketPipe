@@ -4,7 +4,6 @@ airflow-webserver.pid
 airflow-worker.pid
 
 # PostgreSQL related files
-*.sql
 *.sql.gz
 *.backup
 
