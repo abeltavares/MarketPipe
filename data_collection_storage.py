@@ -4,6 +4,7 @@ import requests
 import psycopg2
 
 
+# Function for retrieving top gainers
 def get_top_gainers():
     """Get the top gainers from the financialmodelingprep API"""
     url = "https://financialmodelingprep.com/api/v3/stock_market \
