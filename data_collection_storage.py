@@ -62,7 +62,7 @@ def store_data_in_postgresql(data):
             close_price = stock_info["Time Series (5min)"][date]["4. close"]
             volume = stock_info["Time Series (5min)"][date]["5. volume"]
             # Insert the data into the table
-            cur.execute("INSERT INTO dashboard.stock_data \
+            cur.execute("INSERT INTO dashboard_data.stock_data \
                 (symbol, date, open, high, low, close, volume) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                         (symbol, date, open_price, high, low, close_price, volume))
         conn.commit()
