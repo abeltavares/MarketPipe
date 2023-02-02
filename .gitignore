@@ -7,9 +7,6 @@ airflow-worker.pid
 *.sql.gz
 *.backup
 
-# Power BI Desktop temporary files
-*.pbix.autosave
-
 # Python cache files
 __pycache__/
 *.pyc
