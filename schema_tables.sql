@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS dashboard.stock_data (
 );
 
 -- Create a table to store the crypto data
-CREATE TABLE IF NOT EXISTS crypto_data (
+CREATE TABLE IF NOT EXISTS dashboardcrypto_data (
   id serial PRIMARY KEY,
   symbol varchar(50) NOT NULL,
   date timestamp NOT NULL,
