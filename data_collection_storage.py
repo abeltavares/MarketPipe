@@ -12,7 +12,11 @@ def get_top_gainers():
     if response.status_code != 200:
         raise Exception(f"Failed to retrieve data from the API: {response.text}")
     data = response.json()
-    return data
+    top_gainers_data = [item['symbol'] for item in data[:5]]
+    return top_gainers_data
+
+# List the 5 top gainers
+top_five_stocks = get_top_gainers()
 
 # Function for retrieving company name
 def get_company_name(symbol):
@@ -24,13 +28,6 @@ def get_company_name(symbol):
     company_data = response.json()[0]['companyName']
     # Return the company name
     return company_data
-
-# List of the 5 top gainers
-top_gainers_data = get_top_gainers()
-top_five_stocks = []
-for i in range(5):
-    top_five_stocks.append(top_gainers_data[i]["symbol"])
-
 
 # Function for retrieving top stock data
 def get_stock_data(symbols):
@@ -75,8 +72,7 @@ def store_data_in_postgresql(data):
             close_price = stock_info["Time Series (5min)"][date]["4. close"]
             volume = stock_info["Time Series (5min)"][date]["5. volume"]
             # Insert the data into the table
-            cur.execute("INSERT INTO dashboard.stock_data \
-                (symbol, name, date, open, high, low, close, volume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            cur.execute("INSERT INTO dashboard.stock_data(symbol, name, date, open, high, low, close, volume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                         (symbol, name, date, open_price, high, low, close_price, volume))
         conn.commit()
     except psycopg2.Error as error:
