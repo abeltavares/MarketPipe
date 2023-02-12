@@ -17,8 +17,6 @@ The workflow is implemented using Python and consists of the following component
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-- [Requirements](#requirements)
-- [Setup](#setup)
 - [Usage](#usage)
 - [Contributions](#contributions)
 
