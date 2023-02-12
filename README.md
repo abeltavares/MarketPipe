@@ -19,8 +19,8 @@ The workflow is implemented using Python and consists of the following component
 - [Getting Started](#getting-started)
 - [Requirements](#requirements)
 - [Setup](#setup)
-- [Usage](#Usage)
-- [Contributing](#contributing)
+- [Usage](#usage)
+- [Contributions](#contributions)
 
 ## Getting Started
 
@@ -35,39 +35,39 @@ These instructions will get you a copy of the project up and running on your loc
 ### Setup
 1. Clone the repository: <br>
 
-     $ git clone https://github.com/abeltavares/python_challanges.git <br>
+       $ git clone https://github.com/abeltavares/python_challanges.git <br>
 
 2. Create and activate a virtual environment: <br>
 
-     $ python3 -m venv venv
-     $ source venv/bin/activate
+       $ python3 -m venv venv
+       $ source venv/bin/activate
 
 3. Install the dependencies:<br>
 
-     $ pip install -r requirements.txt
+       $ pip install -r requirements.txt
 
 4. Create the database and schema:<br>
 
-     $ psql -f schema_tables.sql
+       $ psql -f schema_tables.sql
 
 5. Update the connection information in 'conn_file.json'<br>
 
- {
-    "host": "localhost",
-    "database": "stock_data_db",
-    "user": "user",
-    "password": "password",
-    "schema_name": "stock_data",
-    "table_name": "stocks"
- }
+       {
+        "host": "localhost",
+        "database": "stock_data_db",
+        "user": "user",
+        "password": "password",
+        "schema_name": "stock_data",
+         "table_name": "stocks"
+       }
 
-6. Start the Airflow web server:<br>
+6. Start the Airflow web server:
 
-     $ airflow webserver
+       $ airflow webserver
 
 7. Start the Airflow web server:<br>
 
-     Go to the Airflow web UI at http://localhost:8080 and turn on the stock_data_collection DAG.
+      Go to the Airflow web UI at http://localhost:8080 and turn on the stock_data_collection DAG.
 
 ## Usage
 
