@@ -1,0 +1,8 @@
+{
+  "host": "localhost",
+  "database": "stock_data_db",
+  "user": "user",
+  "password": "password",
+  "schema_name": "stock_data",
+  "table_name": "stocks"
+}
