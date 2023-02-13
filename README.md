@@ -35,7 +35,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Setup
 1. Clone the repository: <br>
 
-       $ git clone https://github.com/abeltavares/python_challanges.git <br>
+       $ git clone https://github.com/abeltavares/stock_data_workflow.git 
 
 2. Create and activate a virtual environment: <br>
 
