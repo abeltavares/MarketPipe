@@ -6,7 +6,7 @@
 
 
 # Stock Data Collection and Storage
-This repository provides a sample workflow for collecting and storing stock data in a PostgreSQL database using Apache Airflow. The data is collected on stock gainers and can be easily adapted to collect data on other stocks such as loosers or actives.
+This repository provides a sample workflow for collecting and storing stock data in a PostgreSQL database using Apache Airflow. The data is collected on current stock gainers and can be easily adapted to collect data on other stocks such as loosers or actives.
 
 ## Table of Contents
 
