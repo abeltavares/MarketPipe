@@ -110,7 +110,7 @@ def store_stock_data_in_database(data: dict, config_file: str):
     :param data: A dictionary with the stock symbol as the key and the stock data as the value
     :param config_file: A JSON file containing the database configuration
     """
-        # Load the database configuration
+    # Load the database configuration
     with open(config_file, "r") as f:
         config = json.load(f)
     host = config.get("host")
