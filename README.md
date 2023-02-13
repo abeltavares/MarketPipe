@@ -8,15 +8,6 @@
 # Stock Data Collection and Storage
 This repository provides a sample workflow for collecting and storing stock data in a PostgreSQL database using Apache Airflow. The data is collected on stock gainers and can be easily adapted to collect data on other stocks such as loosers or actives.
 
-The workflow is implemented using Python and consists of the following components:
-
-1. data_collection_storage.py - This file contains the functions for collecting and storing stock data.
-
-2. stock_workflow_dag.py - This file contains the definition of the DAG and its tasks in Apache Airflow.
-
-3. conn_file.json - This file contains the configuration for connecting to the database where the stock data will be stored.
-
-
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -32,6 +23,14 @@ These instructions will get you a copy of the project up and running on your loc
 - Python 3.x
 - Airflow
 - PostgreSQL
+
+### Files
+
+- data_collection_storage.py - This file contains the functions for collecting and storing stock data.
+- stock_workflow_dag.py - This file contains the definition of the DAG and its tasks in Apache Airflow.
+- conn_file.json - This file contains the configuration for connecting to the database where the stock data will be stored.
+- schema_tables.sql - This file contains the SQL commands for creating the schema and tables in the database where the stock data will be stored.
+
 
 ### Setup
 1. Clone the repository: <br>
