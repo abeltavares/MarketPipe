@@ -1,6 +1,9 @@
+![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
+
 [![WIP](https://img.shields.io/badge/status-Work%20In%20Progress-yellow)](https://github.com/abeltavares/stock-crypto-dashboard)
 [![Powered by PostgreSQL](https://img.shields.io/badge/powered%20by-PostgreSQL-blue.svg)](https://www.postgresql.org/)
 [![Python Version](https://img.shields.io/badge/python-3.x-brightgreen.svg)](https://www.python.org/downloads/)
+
 
 # Stock Data Collection and Storage
 This repository provides a sample workflow for collecting and storing stock data in a PostgreSQL database using Apache Airflow. The data is collected on stock gainers and can be easily adapted to collect data on other stocks such as loosers or actives.
