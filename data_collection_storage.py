@@ -1,10 +1,11 @@
+"""
 A Python script that retrieves stock market data from Alpha Vantage and Financial Modeling Prep APIs and stores the data in a PostgreSQL database.
 
 The script contains three main functions:
 - `get_stocks`: retrieves the symbols of the top 5 stocks of a specified market performance (gainers, losers, or actives)
 - `get_stock_data`: retrieves the volume, price, change percent, and name of the specified stock symbols
 - `store_stock_data_in_database`: stores the stock market data in a PostgreSQL database
-
+"""
 import requests
 import psycopg2
 import json
