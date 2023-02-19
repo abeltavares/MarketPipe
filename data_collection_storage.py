@@ -113,10 +113,6 @@ def store_stock_data_in_database(data: dict, config_file: str):
     # Load the database configuration
     with open(config_file, "r") as f:
         config = json.load(f)
-    host = config.get("host")
-    database = config.get("database")
-    user = config.get("user")
-    password = config.get("password")
     schema_name = config.get("schema_name")
     table_name = config.get("table_name")
 
