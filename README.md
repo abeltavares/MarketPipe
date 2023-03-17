@@ -36,7 +36,7 @@ The `data_collection_storage_crypto` DAG consists of the following tasks:
 
 DAG runs every day at 11 PM.
 
-The `docker-compose.yml` file is used to define the services and configure the project's containers, setting up the environment.
+The `docker-compose.yml` file is used to define the services and configure the project's containers, setting up the environment (postgres, pgadmin, airflow).
 
 The `init.sql` file is used to create and initialize the database schema when the docker compose command is executed.
 
