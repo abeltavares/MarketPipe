@@ -26,7 +26,7 @@ The `data_collection_storage_stocks` DAG consists of the following tasks:
 
 3. `store_stock_data`: Stores the stock data in a PostgreSQL database.
 
-The `data_collection_storage_stocks` DAG runs every day at 11 PM from Monday to Friday.
+DAG runs every day at 11 PM from Monday to Friday.
 
 The `data_collection_storage_crypto` DAG consists of the following tasks:
 
@@ -34,7 +34,7 @@ The `data_collection_storage_crypto` DAG consists of the following tasks:
 
 2. `store_crypto_data`: Stores the cryptocurrency data in a PostgreSQL database.
 
-The `data_collection_storage_crypto` DAG runs every day at 11 PM.
+DAG runs every day at 11 PM.
 
 The `docker-compose.yml` file is used to define the services and configure the project's containers, setting up the environment.
 
@@ -62,11 +62,11 @@ The columns for each table are as follows:
 
 1. Clone the repository: <br>
 
-       $ git clone https://github.com/abeltavares/stock_data_workflow.git 
+       $ git clone https://github.com/abeltavares/MarketTrackPipe.git
 
 2. Create an '.env' file in the project's root directory with the required environment variables (refer to the example .env file in the project).
 
-2. Replace the API keys in the data_collection_storage.py file with your own API keys.
+2. Replace the API keys in the `data_collection_storage.py` file with your own API keys.
 
 3. Start the Docker containers:<br>
 
@@ -74,13 +74,14 @@ The columns for each table are as follows:
 
 4. Access the Airflow web server:<br>
 
-      Go to the Airflow web UI at http://localhost:8080 and turn on the data_collection_storage DAG.
+      Go to the Airflow web UI at http://localhost:8080 and turn on the DAGs.
 
       Alternatively, you can trigger the DAG manually by running the following command in your terminal:
 
-       $ airflow trigger_dag data_collection_storage
+       $ airflow trigger_dag data_collection_storage_stocks
+       $ airflow trigger_dag data_collection_storage_crypto
 
-That's it! You should now be able to collect and store stock and cryptocurrency data using MarketTracker.
+That's it! You should now be able to collect and store stock and cryptocurrency data using MarketTrackPipe.
 
 
 ## Usage
@@ -89,11 +90,11 @@ After setting up the workflow, you can access the Apache Airflow web UI to monit
 
 To access the data stored in the PostgreSQL database, you have two options:
 
-1. Use `pgAdmin`, a web-based visual interface. To access it, navigate to http://localhost:5050 in your web browser and log in using the credentials defined in the '.env' file in the project root directory. From there, you can interactively browse the tables created by the pipeline, run queries, and extract the desired data for analysis or visualization.
-
-Use the command-line tool `psql` to run SQL queries directly. The database credentials and connection information can be found in the '.env' file as well. Using psql, you can connect to the database, execute queries, and save the output to a file or use it as input for other scripts or applications.
+1. Use the command-line tool `psql` to run SQL queries directly. The database credentials and connection information can be found in the '.env' file as well. Using psql, you can connect to the database, execute queries, and save the output to a file or use it as input for other scripts or applications.
 
        $ docker exec -it my-postgres psql -U postgres -d market_data
+
+2. Use `pgAdmin`, a web-based visual interface. To access it, navigate to http://localhost:5050 in your web browser and log in using the credentials defined in the `.env` file in the project root directory. From there, you can interactively browse the tables created by the pipeline, run queries, and extract the desired data for analysis or visualization.
 
 Choose the option that suits you best depending on your familiarity with SQL and preference for a graphical or command-line interface.
 
