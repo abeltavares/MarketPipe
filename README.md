@@ -1,82 +1,110 @@
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white)
 ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
+![PgAdmin](https://img.shields.io/badge/PgAdmin-4B0082?style=for-the-badge&logo=pgAdmin&logoColor=white)![PgAdmin](https://img.shields.io/badge/PgAdmin-4B0082?style=for-the-badge&logo=pgAdmin&logoColor=white)
 
-[![WIP](https://img.shields.io/badge/status-Work%20In%20Progress-yellow)](https://github.com/abeltavares/stock-crypto-dashboard)
+
 [![Powered by PostgreSQL](https://img.shields.io/badge/powered%20by-PostgreSQL-blue.svg)](https://www.postgresql.org/)
 [![Python Version](https://img.shields.io/badge/python-3.x-brightgreen.svg)](https://www.python.org/downloads/)
 
 
-# Stock Data Collection and Storage
-This repository provides a sample workflow for collecting and storing stock data in a PostgreSQL database using Apache Airflow. The data is collected on current stock gainers and can be easily adapted to collect data on other stocks such as loosers or actives.
+# MarketTrackPipe
 
-## Table of Contents
+MarketTrackPipe is an automated data pipeline for collecting and storing stock and cryptocurrency market data. The pipeline retrieves data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database.
 
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Contributions](#contributions)
+## Project Components
 
-## Getting Started
+The pipeline consists of two Python scripts in the \dags folder:
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+- `data_collection_storage.py`: Contains functions for retrieving stock and crypto performance data from APIs and storing the data in a PostgreSQL database.
+- `market_data_dag.py`: Sets up the DAGs for collecting and storing stock data from the financialmodelingprep and Alpha Advantage APIs, as well as cryptocurrency data from the CoinMarketCap API.
 
-### Requirements
+The `data_collection_storage_stocks` DAG consists of the following tasks:
 
-- Python 3.x
-- Airflow
-- PostgreSQL
+1. `get_stocks`: Retrieves the symbol of the top 5 stocks according to market performance.
 
-### Files
+2. `get_stock_data`: Retrieves detailed information of the stocks retrieved in task 1.
 
-- data_collection_storage.py - This file contains the functions for collecting and storing stock data.
-- stock_workflow_dag.py - This file contains the definition of the DAG and its tasks in Apache Airflow.
-- conn_file.json - This file contains the configuration for connecting to the database where the stock data will be stored.
-- schema_tables.sql - This file contains the SQL commands for creating the schema and tables in the database where the stock data will be stored.
+3. `store_stock_data`: Stores the stock data in a PostgreSQL database.
+
+The `data_collection_storage_stocks` DAG runs every day at 11 PM from Monday to Friday.
+
+The `data_collection_storage_crypto` DAG consists of the following tasks:
+
+1. `get_crypto_data`: Retrieves data for the top 5 cryptocurrencies according to market performance.
+
+2. `store_crypto_data`: Stores the cryptocurrency data in a PostgreSQL database.
+
+The `data_collection_storage_crypto` DAG runs every day at 11 PM.
+
+The `docker-compose.yml` file is used to define the services and configure the project's containers, setting up the environment.
+
+The `init.sql` file is used to create and initialize the database schema when the docker compose command is executed.
+
+It creates creates two schemas in market_data database, one for stock data and another for crypto data, and then creates tables within each schema to store gainer, loser, and active data for both stock and crypto.
+
+The columns for each table are as follows:
+
+- `id` : a unique identifier for each row in the table
+- `date_collected` : the date on which the data was collected, defaulting to the current date
+- `symbol` : the stock or crypto symbol
+- `name` : the name of the stock or crypto
+- `market_cap` : the market capitalization of the stock or crypto
+- `volume` : the trading volume of the stock or crypto
+- `price` : the price of the stock or crypto
+- `change_percent` : the percentage change in the price of the stock or crypto
+
+## Requirements
+
+- [Docker](https://www.docker.com/get-started)
 
 
-### Setup
+## Setup
+
 1. Clone the repository: <br>
 
        $ git clone https://github.com/abeltavares/stock_data_workflow.git 
 
-2. Create and activate a virtual environment: <br>
+2. Create an '.env' file in the project's root directory with the required environment variables (refer to the example .env file in the project).
 
-       $ python3 -m venv venv
-       $ source venv/bin/activate
+2. Replace the API keys in the data_collection_storage.py file with your own API keys.
 
-3. Install the dependencies:<br>
+3. Start the Docker containers:<br>
 
-       $ pip install -r requirements.txt
+       $ docker-compose up
 
-4. Create the database and schema:<br>
+4. Access the Airflow web server:<br>
 
-       $ psql -f schema_tables.sql
+      Go to the Airflow web UI at http://localhost:8080 and turn on the data_collection_storage DAG.
 
-5. Update the connection information in 'conn_file.json'<br>
+      Alternatively, you can trigger the DAG manually by running the following command in your terminal:
 
-       {
-        "host": "localhost",
-        "database": "stock_data_db",
-        "user": "user",
-        "password": "password",
-        "schema_name": "stock_data",
-         "table_name": "stocks"
-       }
+       $ airflow trigger_dag data_collection_storage
 
-6. Start the Airflow web server:
+That's it! You should now be able to collect and store stock and cryptocurrency data using MarketTracker.
 
-       $ airflow webserver
-
-7. Start the Airflow web server:<br>
-
-      Go to the Airflow web UI at http://localhost:8080 and turn on the stock_data_collection DAG.
 
 ## Usage
 
-The code will collect stock data every day at 7 PM and store the data in the PostgreSQL database. The data will be stored in the stock_data schema in the stock_data_db database.
-After setting up the workflow, you can access the Apache Airflow web UI to monitor the status of the tasks and the overall workflow. You can also manually trigger the workflow or change its schedule as per your requirements.
+After setting up the workflow, you can access the Apache Airflow web UI to monitor the status of the tasks and the overall workflow.
 
-    $ airflow trigger_dag stock_data_collection
+To access the data stored in the PostgreSQL database, you have two options:
+
+1. Use `pgAdmin`, a web-based visual interface. To access it, navigate to http://localhost:5050 in your web browser and log in using the credentials defined in the '.env' file in the project root directory. From there, you can interactively browse the tables created by the pipeline, run queries, and extract the desired data for analysis or visualization.
+
+Use the command-line tool `psql` to run SQL queries directly. The database credentials and connection information can be found in the '.env' file as well. Using psql, you can connect to the database, execute queries, and save the output to a file or use it as input for other scripts or applications.
+
+       $ docker exec -it my-postgres psql -U postgres -d market_data
+
+Choose the option that suits you best depending on your familiarity with SQL and preference for a graphical or command-line interface.
+
+## Acknowledgments 
+
+The APIs used in this project are provided by [Alpha Vantage](https://www.alphavantage.co/documentation/), [Financial Modeling Prep](https://financialmodelingprep.com/developer/docs/), and [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/). Please refer to their documentation for more information on their APIs.
 
 
 ## Contributions
 
 This project is open to contributions. If you have any suggestions or improvements, please feel free to create a pull request.
+
+## Copyright
+© 2023 Abel Tavares
