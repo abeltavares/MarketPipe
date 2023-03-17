@@ -1,6 +1,6 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white)
 ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
-![PgAdmin](https://img.shields.io/badge/PgAdmin-4B0082?style=for-the-badge&logo=pgAdmin&logoColor=white)![PgAdmin](https://img.shields.io/badge/PgAdmin-4B0082?style=for-the-badge&logo=pgAdmin&logoColor=white)
+![PgAdmin](https://img.shields.io/badge/PgAdmin-4B0082?style=for-the-badge&logo=pgAdmin&logoColor=white)
 
 
 [![Powered by PostgreSQL](https://img.shields.io/badge/powered%20by-PostgreSQL-blue.svg)](https://www.postgresql.org/)
@@ -13,7 +13,7 @@ MarketTrackPipe is an automated data pipeline for collecting and storing stock a
 
 ## Project Components
 
-The pipeline consists of two Python scripts in the \dags folder:
+The pipeline consists of two Python scripts in `dags` folder:
 
 - `data_collection_storage.py`: Contains functions for retrieving stock and crypto performance data from APIs and storing the data in a PostgreSQL database.
 - `market_data_dag.py`: Sets up the DAGs for collecting and storing stock data from the financialmodelingprep and Alpha Advantage APIs, as well as cryptocurrency data from the CoinMarketCap API.
@@ -40,7 +40,7 @@ The `docker-compose.yml` file is used to define the services and configure the p
 
 The `init.sql` file is used to create and initialize the database schema when the docker compose command is executed.
 
-It creates creates two schemas in market_data database, one for stock data and another for crypto data, and then creates tables within each schema to store gainer, loser, and active data for both stock and crypto.
+It creates creates two schemas in `market_data` database, one for `stock_data` and another for `crypto_data`, and then creates tables within each schema to store `gainer`, `loser`, and `active` data for both stock and crypto.
 
 The columns for each table are as follows:
 
