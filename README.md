@@ -9,7 +9,7 @@
 
 # MarketTrackPipe
 
-MarketTrackPipe is an automated data pipeline for collecting, storing, and backing up stock and cryptocurrency market data. The pipeline retrieves daily data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database. Additionally, the pipeline includes a backup function that stores the data from the database in an Amazon S3 bucket on the last day of every month.
+MarketTrackPipe is an automated Apache Airflow data pipeline for collecting, storing, and backing up stock and cryptocurrency market data. The pipeline retrieves daily data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database. Additionally, the pipeline includes a monthly backup function that stores the data from the database in an AWS S3 bucket. The pipeline is containerized using Docker and written in Python 3.
 
 ## Project Components
 
