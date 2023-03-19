@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS crypto_data.gainers (
     name VARCHAR(50) NOT NULL,
     market_cap NUMERIC(20,2) NOT NULL,
     volume INT NOT NULL,
-    price NUMERIC(10,8) NOT NULL,
+    price NUMERIC(25,15) NOT NULL,
     change_percent NUMERIC(50,30) NOT NULL
 );
 
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS crypto_data.losers (
     name VARCHAR(50) NOT NULL,
     market_cap NUMERIC(20,2) NOT NULL,
     volume INT NOT NULL,
-    price NUMERIC(10,8) NOT NULL,
+    price NUMERIC(25,15) NOT NULL,
     change_percent NUMERIC(50,30) NOT NULL
 );
 
@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS crypto_data.actives (
     symbol VARCHAR(20) NOT NULL,
     name VARCHAR(50) NOT NULL,
     market_cap NUMERIC(20,2) NOT NULL,
-    price NUMERIC(10,8) NOT NULL,
+    volume INT NOT NULL,
+    price NUMERIC(25,15) NOT NULL,
     change_percent NUMERIC(50,30) NOT NULL
 );
