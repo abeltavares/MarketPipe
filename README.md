@@ -70,8 +70,6 @@ The columns for each table are as follows:
 
 2. Create an '.env' file in the project's root directory with the required environment variables (refer to the example .env file in the project).
 
-2. Replace the API keys in the `data_collection_storage.py` file with your own API keys.
-
 3. Start the Docker containers:<br>
 
        $ docker-compose up
@@ -84,6 +82,7 @@ The columns for each table are as follows:
 
        $ airflow trigger_dag data_collection_storage_stocks
        $ airflow trigger_dag data_collection_storage_crypto
+       $ airflow trigger_dag backup_data
 
 That's it! You should now be able to collect and store stock and cryptocurrency data using MarketTrackPipe.
 
