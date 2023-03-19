@@ -38,7 +38,7 @@ DAG runs every day at 11 PM.
 
 The `backup_data` DAG consists of the following task:
 
-1. `backup_data`: Extracts data from the PostgreSQL database and stores it in an Amazon S3 bucket.
+1. `backup_data`: Extracts data from the PostgreSQL database and stores it in an Amazon S3 bucket in parquet file format.
 
 The `docker-compose.yml` file is used to define the services and configure the project's containers, setting up the environment (postgres, pgadmin, airflow).
 
