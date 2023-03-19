@@ -9,14 +9,14 @@
 
 # MarketTrackPipe
 
-MarketTrackPipe is an automated data pipeline for collecting and storing stock and cryptocurrency market data. The pipeline retrieves data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database.
+MarketTrackPipe is an automated data pipeline for collecting, storing, and backing up stock and cryptocurrency market data. The pipeline retrieves daily data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database. Additionally, the pipeline includes a backup function that stores the data from the database in an Amazon S3 bucket on the last day of every month.
 
 ## Project Components
 
 The pipeline consists of two Python scripts in `dags` folder:
 
-- `data_collection_storage.py`: Contains functions for retrieving stock and crypto performance data from APIs and storing the data in a PostgreSQL database.
-- `market_data_dag.py`: Sets up the DAGs for collecting and storing stock data from the financialmodelingprep and Alpha Advantage APIs, as well as cryptocurrency data from the CoinMarketCap API.
+- `data_collection_storage.py`: Contains functions for retrieving stock and crypto performance data from APIs and storing the data in a PostgreSQL database, as well as a function for backing up the data to Amazon S3.
+- `market_data_dag.py`:  Sets up the DAGs for collecting and storing stock data from the financialmodelingprep and Alpha Advantage APIs, as well as cryptocurrency data from the CoinMarketCap API. Additionally, it sets up a DAG for backing up the data in the PostgreSQL database to Amazon S3 on the last day of every month.
 
 The `data_collection_storage_stocks` DAG consists of the following tasks:
 
@@ -35,6 +35,10 @@ The `data_collection_storage_crypto` DAG consists of the following tasks:
 2. `store_crypto_data`: Stores the cryptocurrency data in a PostgreSQL database.
 
 DAG runs every day at 11 PM.
+
+The `backup_data` DAG consists of the following task:
+
+1. `backup_data`: Extracts data from the PostgreSQL database and stores it in an Amazon S3 bucket.
 
 The `docker-compose.yml` file is used to define the services and configure the project's containers, setting up the environment (postgres, pgadmin, airflow).
 
@@ -92,7 +96,7 @@ To access the data stored in the PostgreSQL database, you have two options:
 
 1. Use the command-line tool `psql` to run SQL queries directly. The database credentials and connection information can be found in the '.env' file as well. Using psql, you can connect to the database, execute queries, and save the output to a file or use it as input for other scripts or applications.
 
-       $ docker exec -it my-postgres psql -U postgres -d market_data
+       $ docker exec -it my-postgres psql -U postgres -d market_data    
 
 2. Use `pgAdmin`, a web-based visual interface. To access it, navigate to http://localhost:5050 in your web browser and log in using the credentials defined in the `.env` file in the project root directory. From there, you can interactively browse the tables created by the pipeline, run queries, and extract the desired data for analysis or visualization.
 
