@@ -1,123 +1,87 @@
-"""
-These scripts set up three DAGs for collecting, storing and backing up financial market data, including stock data and cryptocurrency data.
-The DAG for stock data collection and storage consists of three tasks:
-
-get_stocks: retrieves the symbol of the top 5 stocks accordingly with market performance
-get_stock_data: retrieves detailed information of the stocks retrieved in task 1
-store_stock_data_in_database: stores the stock data in a database
-The DAG for cryptocurrency data collection and storage consists of two tasks:
-
-get_crypto_data: retrieves data for the top 5 cryptocurrencies accordingly with market performance
-store_crypto_data_in_database: stores the cryptocurrency data in a database
-Both DAGs run at 11 PM, as specified by the schedule_interval parameter. Task dependencies are established such that get_stocks (for the stock data DAG) and get_crypto_data (for the cryptocurrency data DAG) must complete before their respective downstream tasks. Similarly, get_stock_data must complete before store_stock_data for the stock data DAG.
-
-The data_collection_storage_stocks DAG is scheduled to run everyday at 11 PM from Monday to Friday, as specified by the schedule_interval parameter. On the other hand, the data_collection_storage_crypto DAG is scheduled to run everyday at 11 PM, without any day-of-week restrictions.
-Task dependencies are established such that get_stocks must complete before get_stock_data, and get_stock_data must complete before store_stock_data. Similarly, get_crypto_data must complete before store_crypto_data.
-
-The third DAG, backup_data, is created for backing up the data from the database to S3 on the last day of every month at 11:59 PM.
-
-The script makes use of PythonOperator to define the tasks, and passes output of one task to the input of the next using op_kwargs and op_args parameters. The get_stocks_data, get_crypto_data and backup_data tasks have no dependencies on any previous tasks.
-"""
-
+import os
+import sys
 from airflow.operators.python import PythonOperator
 from airflow.models import DAG
-from datetime import datetime, timedelta
-from data_collection_storage import (
-    get_stocks, get_stock_data, store_stock_data, 
-    get_crypto_data, store_crypto_data, backup_data
+from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Find the parent directory
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(parent_dir)
+
+# Add the project root to the Python path
+sys.path.insert(0, project_root)
+
+from core.market_data_processor import (
+    StockApiClient,
+    CryptoApiClient,
+    Storage,
+    MarketDataEngine,
 )
 
 # Define default arguments for the DAGs
 default_args_stocks = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2023, 3, 15),
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 0,
+    "owner": "airflow",
+    "depends_on_past": False,
+    "start_date": datetime(2023, 3, 15),
+    "email_on_failure": False,
+    "email_on_retry": False,
+    "retries": 0,
 }
 
 default_args_cryptos = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2023, 3, 15),
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 0,
+    "owner": "airflow",
+    "depends_on_past": False,
+    "start_date": datetime(2023, 3, 15),
+    "email_on_failure": False,
+    "email_on_retry": False,
+    "retries": 0,
 }
 
-default_args_backup = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2023, 3, 15),
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 0,
-}
+# Create instances of the classes
+stock_api_client = StockApiClient(
+    os.environ["ALPHA_API_KEY"], os.environ["PREP_API_KEY"]
+)
+crypto_api_client = CryptoApiClient(os.environ["COIN_API_KEY"])
+db_connector = Storage(
+    os.getenv["POSTGRES_HOST"],
+    os.getenv["POSTGRES_PORT"],
+    os.getenv["POSTGRES_DB"],
+    os.getenv["POSTGRES_USER"],
+    os.getenv["POSTGRES_PASSWORD"],
+)
+stock_engine = MarketDataEngine(stock_api_client, db_connector)
+crypto_engine = MarketDataEngine(crypto_api_client, db_connector)
 
 # Create the DAG for stock data collection and storage
 dag_stocks = DAG(
-    'data_collection_storage_stocks', 
-    default_args=default_args_stocks, 
-    schedule_interval='0 23 * * 1-5', # Schedule to run everyday at 11 PM from Monday to Friday
-    description='Collect and store stock data' # Add description for the DAG
+    "data_collection_storage_stocks",
+    default_args=default_args_stocks,
+    schedule_interval="0 23 * * 1-5",  # Schedule to run everyday at 11 PM from Monday to Friday
+    description="Collect and store stock data",
 )
 
 # Create the DAG for cryptocurrency data collection and storage
 dag_cryptos = DAG(
-    'data_collection_storage_crypto', 
-    default_args=default_args_cryptos, 
-    schedule_interval='0 23 * * *', # Schedule to run everyday at 11 PM
-    description='Collect and store cryptocurrency data' # Add description for the DAG
+    "data_collection_storage_crypto",
+    default_args=default_args_cryptos,
+    schedule_interval="0 23 * * *",  # Schedule to run everyday at 11 PM
+    description="Collect and store cryptocurrency data",
 )
 
-# Create the DAG for backup
-dag_backup = DAG(
-    'backup_data',
-    default_args=default_args_backup,
-    description='Extract and store data from database to S3 monthly',
-    schedule_interval='59 23 L * *',  # Run on the last day of every month at 11:59 PM
-)
-
-# Define the tasks for stock data collection and storage
-get_stocks_task = PythonOperator(
-    task_id='get_stocks',
-    python_callable=get_stocks,
-    dag=dag_stocks,
-)
-
-get_stock_data_task = PythonOperator(
-    task_id='get_stock_data',
-    python_callable=get_stock_data,
-    op_kwargs={'symbols': get_stocks_task.output},
-    dag=dag_stocks,
-)
-
-store_stock_data_task = PythonOperator(
-    task_id='store_stock_data',
-    python_callable=store_stock_data,
-    op_kwargs={'data': get_stock_data_task.output},
+# Define the task for stock data collection and storage
+process_stock_data_task = PythonOperator(
+    task_id="get_stocks",
+    python_callable=stock_engine.process_stock_data,
     dag=dag_stocks,
 )
 
 # Define the tasks for cryptocurrency data collection and storage
-get_crypto_data_task = PythonOperator(
-    task_id='get_crypto_data',
-    python_callable=get_crypto_data,
+process_crypto_data_task = PythonOperator(
+    task_id="get_crypto",
+    python_callable=crypto_engine.process_crypto_data,
     dag=dag_cryptos,
-)
-
-store_crypto_data_task = PythonOperator(
-    task_id='store_crypto_data',
-    python_callable=store_crypto_data,
-    op_args=[get_crypto_data_task.output],
-    dag=dag_cryptos,
-)
-
-# Define task for database backup
-backup_task = PythonOperator(
-    task_id='backup_data',
-    python_callable=backup_data,
-    op_kwargs={'bucket_name': 'marketdata6498'},  #replace with your bucket name
-    dag=dag_backup
 )

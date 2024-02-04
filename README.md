@@ -9,42 +9,33 @@
 
 # MarketTrackPipe
 
-MarketTrackPipe is an automated Apache Airflow data pipeline for collecting, storing, and backing up stock and cryptocurrency market data. The pipeline retrieves daily data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database. Additionally, the pipeline includes a monthly backup function that stores the data from the database in an AWS S3 bucket. The pipeline is containerized using Docker and written in Python 3.
+MarketTrackPipe is an automated Apache Airflow data pipeline for collecting and storing stock and cryptocurrency market data. The pipeline retrieves daily data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database. The pipeline is containerized using Docker and written in Python 3.
 
 ## Project Components
 
-The pipeline consists of two Python scripts in `dags` folder:
 
-- `data_collection_storage.py`: Contains functions for retrieving stock and crypto performance data from APIs and storing the data in a PostgreSQL database, as well as a function for backing up the data to Amazon S3.
-- `market_data_dag.py`:  Sets up the DAGs for collecting and storing stock data from the financialmodelingprep and Alpha Advantage APIs, as well as cryptocurrency data from the CoinMarketCap API. Additionally, it sets up a DAG for backing up the data in the PostgreSQL database to Amazon S3 on the last day of every month.
+```
+   ├── core
+   │   ├── __init__.py
+   │   └── market_data_processor.py
+   ├── dags
+   │   └── market_data_dag.py
+   ├── docker-compose.yaml
+   ├── init.sql
+   └── tests
+      ├── dags_test.py
+      └── tests_market_data_processor.py
+```
 
-The `data_collection_storage_stocks` DAG consists of the following tasks:
+- `core`: Contains core functionality for processing market data.
+- `dags`: Contains the Apache Airflow DAG definitions for orchestrating the data collection and storage process.
+- `tests`: Contains the unit tests for testing individual components of the project.
+- `init.sql`: SQL script for creating and initializing the database schema.
+- `docker-compose.yml`: Defines the services and configures the project's containers, setting up the environment (postgres, pgadmin, airflow).
 
-1. `get_stocks`: Retrieves the symbol of the top 5 stocks according to market performance.
+The `MarketDataEngine` class within `core/market_data_processor.py` encapsulates the logic for retrieving and storing market data. The `market_data_dag.py` file within the `dags` directory sets up the Apache Airflow DAGs for collecting and storing market data.
 
-2. `get_stock_data`: Retrieves detailed information of the stocks retrieved in task 1.
-
-3. `store_stock_data`: Stores the stock data in a PostgreSQL database.
-
-DAG runs every day at 11 PM from Monday to Friday.
-
-The `data_collection_storage_crypto` DAG consists of the following tasks:
-
-1. `get_crypto_data`: Retrieves data for the top 5 cryptocurrencies according to market performance.
-
-2. `store_crypto_data`: Stores the cryptocurrency data in a PostgreSQL database.
-
-DAG runs every day at 11 PM.
-
-The `backup_data` DAG consists of the following task:
-
-1. `backup_data`: Extracts data from the PostgreSQL database and stores it in an Amazon S3 bucket in parquet file format.
-
-The `docker-compose.yml` file is used to define the services and configure the project's containers, setting up the environment (postgres, pgadmin, airflow).
-
-The `init.sql` file is used to create and initialize the database schema when the docker compose command is executed.
-
-It creates creates two schemas in `market_data` database, one for `stock_data` and another for `crypto_data`, and then creates tables within each schema to store `gainer`, `loser`, and `active` data for both stock and crypto.
+The `init.sql` defines two schemas in `market_data` database, one for `stock_data` and another for `crypto_data`, and then creates tables within each schema to store `gainer`, `loser`, and `active` data for both stock and crypto.
 
 The columns for each table are as follows:
 
@@ -60,32 +51,56 @@ The columns for each table are as follows:
 ## Requirements
 
 - [Docker](https://www.docker.com/get-started)
+- [pre-commit](https://pre-commit.com/) (Developer)
 
 
 ## Setup
 
-1. Clone the repository: <br>
+1. Clone the repository:
 
-       $ git clone https://github.com/abeltavares/MarketTrackPipe.git
+   ```bash
+    git clone https://github.com/abeltavares/MarketTrackPipe.git
+   ```
 
 2. Create an '.env' file in the project's root directory with the required environment variables (refer to the example .env file in the project).
 
-3. Start the Docker containers:<br>
+3. Start the Docker containers:
 
-       $ docker-compose up
+   ```bash
+    docker-compose up
+   ```
 
-4. Access the Airflow web server:<br>
+4. Access the Airflow web server:
 
-      Go to the Airflow web UI at http://localhost:8080 and turn on the DAGs.
+   Go to the Airflow web UI at http://localhost:8080 and turn on the DAGs.
 
-      Alternatively, you can trigger the DAG manually by running the following command in your terminal:
+   Alternatively, you can trigger the DAG manually by running the following command in your terminal:
 
-       $ airflow trigger_dag data_collection_storage_stocks
-       $ airflow trigger_dag data_collection_storage_crypto
-       $ airflow trigger_dag backup_data
+   ```bash
+    airflow trigger_dag data_collection_storage_stocks
+    airflow trigger_dag data_collection_storage_crypto
+   ```
 
-That's it! You should now be able to collect and store stock and cryptocurrency data using MarketTrackPipe.
 
+## Setting up Pre-commit Hooks (Developer Setup)
+
+To ensure code quality and run unit tests before committing changes, MarketTrackPipe uses [pre-commit](https://pre-commit.com/) hooks. Follow these steps to set it up:
+
+1. Install `pre-commit` by running the following command in your terminal:
+
+   ```bash
+    pip install pre-commit
+   ```
+
+2. Run the following command to set up pre-commit:
+
+   ```bash
+    pre-commit install
+   ```
+
+   This will install the pre-commit hook into your git repository.
+<br>
+3. Now, every time you commit changes, pre-commit will automatically run unit tests to ensure code quality. Additionally, these tests are also executed in a GitHub Actions workflow on every pull request to the repository.
 
 ## Usage
 
@@ -93,10 +108,11 @@ After setting up the workflow, you can access the Apache Airflow web UI to monit
 
 To access the data stored in the PostgreSQL database, you have two options:
 
-1. Use the command-line tool `psql` to run SQL queries directly. The database credentials and connection information can be found in the '.env' file as well. Using psql, you can connect to the database, execute queries, and save the output to a file or use it as input for other scripts or applications.
+1. **Command-line tool `psql`**: You can use `psql` to run SQL queries directly. Find the database credentials and connection information in the '.env' file. Use the following command in your terminal to connect to the database:
 
-       $ docker exec -it my-postgres psql -U postgres -d market_data    
-
+   ```bash
+    docker exec -it [host] psql -U [user] -d market_data  
+   ```
 2. Use `pgAdmin`, a web-based visual interface. To access it, navigate to http://localhost:5050 in your web browser and log in using the credentials defined in the `.env` file in the project root directory. From there, you can interactively browse the tables created by the pipeline, run queries, and extract the desired data for analysis or visualization.
 
 Choose the option that suits you best depending on your familiarity with SQL and preference for a graphical or command-line interface.
@@ -112,3 +128,13 @@ This project is open to contributions. If you have any suggestions or improvemen
 
 ## Copyright
 © 2023 Abel Tavares
+
+
+The codebase of this project follows the [black](https://github.com/psf/black) code style. To ensure consistent formatting, the [pre-commit](https://pre-commit.com/) hook is set up to run the black formatter before each commit.
+
+Additionally, a GitHub Action is configured to automatically run the black formatter on every pull request, ensuring that the codebase remains formatted correctly.
+
+Please make sure to run `pip install pre-commit` and `pre-commit install` as mentioned in the setup instructions to enable the pre-commit hook on your local development environment.
+
+Contributors are encouraged to follow the black code style guidelines when making changes to the codebase.
+
