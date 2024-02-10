@@ -54,15 +54,14 @@ default_args_cryptos = {
 stock_api_client = StockApiClient(
     os.environ["ALPHA_API_KEY"], os.environ["PREP_API_KEY"], logger
 )
-crypto_api_client = CryptoApiClient(os.environ["COIN_API_KEY"], logger
-)
+crypto_api_client = CryptoApiClient(os.environ["COIN_API_KEY"], logger)
 db_connector = Storage(
     os.getenv("POSTGRES_HOST"),
     os.getenv("POSTGRES_PORT"),
     os.getenv("POSTGRES_DB"),
     os.getenv("POSTGRES_USER"),
     os.getenv("POSTGRES_PASSWORD"),
-    logger
+    logger,
 )
 stock_engine = MarketDataEngine(stock_api_client, db_connector, logger)
 crypto_engine = MarketDataEngine(crypto_api_client, db_connector, logger)

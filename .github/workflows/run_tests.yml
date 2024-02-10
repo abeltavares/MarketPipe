@@ -38,3 +38,29 @@ jobs:
         run: |
           python -m unittest discover tests
           python tests/dags_test.py
+
+      - name: Add label if failure
+        if: failure()
+        run: |
+          curl --request POST \
+            --url "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels" \
+            --header "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data-raw '{"labels": ["Tests Failed"]}'
+
+      - name: Check and remove label if present
+        if: success()
+        run: |
+          labels=$(curl -s \
+            --request GET \
+            --url "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels" \
+            --header "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}")
+          
+          if [[ $labels == *"Tests Failed"* ]]; then
+            curl --request DELETE \
+              --url "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels/Tests%20Failed" \
+              --header "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
+          fi
+
+
+

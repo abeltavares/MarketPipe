@@ -6,6 +6,7 @@ import logging
 from typing import Dict, List
 from abc import ABC, abstractmethod
 
+
 class BaseApiClient(ABC):
 
     # Define constant for the top gainers, losers, and actives
@@ -197,7 +198,7 @@ class StockApiClient(BaseApiClient):
 
 
 class CryptoApiClient(BaseApiClient):
-    def __init__(self, COIN_API_KEY: str, logger: logging.Logger ):
+    def __init__(self, COIN_API_KEY: str, logger: logging.Logger):
         super().__init__(logger=logger)
         self.COIN_API_KEY = COIN_API_KEY
 

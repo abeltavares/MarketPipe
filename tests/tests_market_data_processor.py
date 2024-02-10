@@ -410,9 +410,13 @@ class TestMarketDataEngine(unittest.TestCase):
         self.stock_api_client = MagicMock(spec=StockApiClient)
         self.crypto_api_client = MagicMock(spec=CryptoApiClient)
         self.db_connector = MagicMock(spec=Storage)
-        self.logger = MagicMock(spec=logging.Logger)    
-        self.stock_engine = MarketDataEngine(self.stock_api_client, self.db_connector, self.logger)
-        self.crypto_engine = MarketDataEngine(self.crypto_api_client, self.db_connector, self.logger)
+        self.logger = MagicMock(spec=logging.Logger)
+        self.stock_engine = MarketDataEngine(
+            self.stock_api_client, self.db_connector, self.logger
+        )
+        self.crypto_engine = MarketDataEngine(
+            self.crypto_api_client, self.db_connector, self.logger
+        )
 
     def test_process_stock_data(self):
         # Mock the return values for the api_client methods

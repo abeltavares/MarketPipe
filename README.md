@@ -15,7 +15,6 @@ The pipeline follows object-oriented programming principles to ensure modularity
 
 Unit testing is implemented throughout the workflow to ensure the reliability and efficiency of the pipeline. These tests validate the functionality of each component and help identify any potential issues or bugs.
 
-
 ## Project Components
 
 
@@ -184,7 +183,6 @@ graph TD;
     airflow trigger_dag data_collection_storage_crypto
    ```
 
-
 ## Setting up Pre-commit Hooks (Developer Setup)
 
 To ensure code quality and run unit tests before committing changes, MarketTrackPipe uses [pre-commit](https://pre-commit.com/) hooks. Follow these steps to set it up:
@@ -200,9 +198,10 @@ To ensure code quality and run unit tests before committing changes, MarketTrack
    ```bash
     pre-commit install
    ```
-
+   
    This will install the pre-commit hook into your git repository.
 <br>
+
 3. Now, every time you commit changes, pre-commit will automatically run unit tests to ensure code quality. Additionally, these tests are also executed in a GitHub Actions workflow on every pull request to the repository.
 
 ## Usage
