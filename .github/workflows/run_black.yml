@@ -1,0 +1,38 @@
+name: Run Black Formatter
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: psf/black@stable
+
+      - name: Add label if failure
+        if: failure()
+        run: |
+          curl --request POST \
+            --url "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels" \
+            --header "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data-raw '{"labels": ["Formatter Failed"]}'
+
+      - name: Check and remove label if sucess
+        if: success()
+        run: |
+          labels=$(curl -s \
+            --request GET \
+            --url "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels" \
+            --header "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}")
+          
+          if [[ $labels == *"Formatter Failed"* ]]; then
+            curl --request DELETE \
+              --url "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels/Formatter%20Failed" \
+              --header "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
+          fi

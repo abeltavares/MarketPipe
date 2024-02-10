@@ -4,6 +4,15 @@ from airflow.operators.python import PythonOperator
 from airflow.models import DAG
 from datetime import datetime
 from dotenv import load_dotenv
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.WARNING,
+    format="[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -43,22 +52,23 @@ default_args_cryptos = {
 
 # Create instances of the classes
 stock_api_client = StockApiClient(
-    os.environ["ALPHA_API_KEY"], os.environ["PREP_API_KEY"]
+    os.environ["ALPHA_API_KEY"], os.environ["PREP_API_KEY"], logger
 )
-crypto_api_client = CryptoApiClient(os.environ["COIN_API_KEY"])
+crypto_api_client = CryptoApiClient(os.environ["COIN_API_KEY"], logger)
 db_connector = Storage(
-    os.getenv["POSTGRES_HOST"],
-    os.getenv["POSTGRES_PORT"],
-    os.getenv["POSTGRES_DB"],
-    os.getenv["POSTGRES_USER"],
-    os.getenv["POSTGRES_PASSWORD"],
+    os.getenv("POSTGRES_HOST"),
+    os.getenv("POSTGRES_PORT"),
+    os.getenv("POSTGRES_DB"),
+    os.getenv("POSTGRES_USER"),
+    os.getenv("POSTGRES_PASSWORD"),
+    logger,
 )
-stock_engine = MarketDataEngine(stock_api_client, db_connector)
-crypto_engine = MarketDataEngine(crypto_api_client, db_connector)
+stock_engine = MarketDataEngine(stock_api_client, db_connector, logger)
+crypto_engine = MarketDataEngine(crypto_api_client, db_connector, logger)
 
 # Create the DAG for stock data collection and storage
 dag_stocks = DAG(
-    "data_collection_storage_stocks",
+    "process_stock_data",
     default_args=default_args_stocks,
     schedule_interval="0 23 * * 1-5",  # Schedule to run everyday at 11 PM from Monday to Friday
     description="Collect and store stock data",
@@ -66,7 +76,7 @@ dag_stocks = DAG(
 
 # Create the DAG for cryptocurrency data collection and storage
 dag_cryptos = DAG(
-    "data_collection_storage_crypto",
+    "process_crypto_data",
     default_args=default_args_cryptos,
     schedule_interval="0 23 * * *",  # Schedule to run everyday at 11 PM
     description="Collect and store cryptocurrency data",

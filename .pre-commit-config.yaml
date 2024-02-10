@@ -1,0 +1,17 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: unit-tests
+        name: Run Unit Tests
+        entry: |
+            python3 -c "
+            import subprocess
+            import sys
+            TEST_RESULT = subprocess.call(['python3', '-m', 'unittest', 'discover', 'tests'])
+            sys.exit(TEST_RESULT)
+            "
+        language: system
+-   repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+    -   id: black

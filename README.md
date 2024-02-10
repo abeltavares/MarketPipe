@@ -11,6 +11,10 @@
 
 MarketTrackPipe is an automated Apache Airflow data pipeline for collecting and storing stock and cryptocurrency market data. The pipeline retrieves daily data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database. The pipeline is containerized using Docker and written in Python 3.
 
+The pipeline follows object-oriented programming principles to ensure modularity, maintainability, and extensibility. Each component of the pipeline is designed as a separate class with well-defined responsibilities.
+
+Unit testing is implemented throughout the workflow to ensure the reliability and efficiency of the pipeline. These tests validate the functionality of each component and help identify any potential issues or bugs.
+
 ## Project Components
 
 
@@ -28,25 +32,123 @@ MarketTrackPipe is an automated Apache Airflow data pipeline for collecting and 
 ```
 
 - `core`: Contains core functionality for processing market data.
+```mermaid
+classDiagram
+class BaseApiClient {
+    <<abstract>>
+    +logger: logging.Logger
+    <<abstractmethod>>
+    +@abstractmethod get_data(): Dict[str, List[str]]
+}
+class StockApiClient {
+    +ALPHA_API_KEY: str
+    +PREP_API_KEY: str
+    +ALPHA_BASE_URL: str
+    +PREP_BASE_URL: str
+    +logger: logging.Logger
+    +get_stocks(): Dict[str, List[str]]
+    +get_data(symbols: Dict[str, List[str]]): Dict[str, List[Dict]]
+}
+class CryptoApiClient {
+    +COIN_API_KEY: str
+    +logger: logging.Logger
+    +get_data(): Dict[str, List[Dict]]
+}
+class Storage {
+    +host: str
+    +port: int
+    +database: str
+    +user: str
+    +password: str
+    +conn
+    +cur
+    +logger: logging.Logger
+    +_connect()
+    +_close()
+    +store_data(data: Dict[str, List[Dict[str, any]]], data_type: str): None
+}
+class MarketDataEngine {
+    +api_client: BaseApiClient
+    +db_connector: Storage
+    +logger: logging.Logger
+    +process_stock_data()
+    +process_crypto_data()
+}
+BaseApiClient <|-- StockApiClient
+BaseApiClient <|-- CryptoApiClient
+MarketDataEngine "1" --> "1" BaseApiClient
+MarketDataEngine "1" --> "1" Storage
+```
+<br>
+
 - `dags`: Contains the Apache Airflow DAG definitions for orchestrating the data collection and storage process.
 - `tests`: Contains the unit tests for testing individual components of the project.
 - `init.sql`: SQL script for creating and initializing the database schema.
+```mermaid
+graph TD;
+    subgraph DB
+        schema[market_data]
+        stock[stock_data]
+        crypto[crypto_data]
+    end
+    subgraph Fields
+        date_collected
+        symbol
+        name
+        market_cap
+        volume
+        price
+        change_percent
+    end
+
+    schema --> |Schema| stock & crypto
+
+    stock & crypto -->|Table| gainers & losers & actives
+
+    gainers & losers & actives --> Fields
+```
+<br>
+
 - `docker-compose.yml`: Defines the services and configures the project's containers, setting up the environment (postgres, pgadmin, airflow).
 
 The `MarketDataEngine` class within `core/market_data_processor.py` encapsulates the logic for retrieving and storing market data. The `market_data_dag.py` file within the `dags` directory sets up the Apache Airflow DAGs for collecting and storing market data.
+<br>
+```mermaid
+graph TD;
+    subgraph MarketTrackPipe
+        A((Airflow))
+        D(Docker)
+        P(PostgreSQL)
+        G(pgAdmin)
+    end
+    subgraph Core
+        MDE(MarketDataEngine)
+        SAPI(StockApiClient)
+        CAPI(CryptoApiClient)
+        STR(Storage)
+    end
+    subgraph Dags
+        MD_DAG_stocks(process_stock_data)
+        MD_DAG_crypto(process_crypto_data)
+    end
 
-The `init.sql` defines two schemas in `market_data` database, one for `stock_data` and another for `crypto_data`, and then creates tables within each schema to store `gainer`, `loser`, and `active` data for both stock and crypto.
+    D --> A & P & G
+    P --> G
+    A --> Dags
+    Dags -->  MDE
+    MDE --> SAPI & CAPI
+    SAPI & CAPI --> API
+    API --> SAPI & CAPI
+    SAPI & CAPI --> STR
+    STR --> P
 
-The columns for each table are as follows:
-
-- `id` : a unique identifier for each row in the table
-- `date_collected` : the date on which the data was collected, defaulting to the current date
-- `symbol` : the stock or crypto symbol
-- `name` : the name of the stock or crypto
-- `market_cap` : the market capitalization of the stock or crypto
-- `volume` : the trading volume of the stock or crypto
-- `price` : the price of the stock or crypto
-- `change_percent` : the percentage change in the price of the stock or crypto
+    style A fill:#f9f,stroke:#333,stroke-width:4px;
+    style D fill:#bbf,stroke:#333,stroke-width:2px;
+    style P fill:#f9f,stroke:#333,stroke-width:4px;
+    style MDE fill:#f9f,stroke:#333,stroke-width:4px;
+    style MD_DAG_stocks fill:#f9f,stroke:#333,stroke-width:4px;
+    style MD_DAG_crypto fill:#f9f,stroke:#333,stroke-width:4px;
+```
 
 ## Requirements
 
@@ -81,7 +183,6 @@ The columns for each table are as follows:
     airflow trigger_dag data_collection_storage_crypto
    ```
 
-
 ## Setting up Pre-commit Hooks (Developer Setup)
 
 To ensure code quality and run unit tests before committing changes, MarketTrackPipe uses [pre-commit](https://pre-commit.com/) hooks. Follow these steps to set it up:
@@ -97,9 +198,10 @@ To ensure code quality and run unit tests before committing changes, MarketTrack
    ```bash
     pre-commit install
    ```
-
+   
    This will install the pre-commit hook into your git repository.
 <br>
+
 3. Now, every time you commit changes, pre-commit will automatically run unit tests to ensure code quality. Additionally, these tests are also executed in a GitHub Actions workflow on every pull request to the repository.
 
 ## Usage
@@ -137,4 +239,3 @@ Additionally, a GitHub Action is configured to automatically run the black forma
 Please make sure to run `pip install pre-commit` and `pre-commit install` as mentioned in the setup instructions to enable the pre-commit hook on your local development environment.
 
 Contributors are encouraged to follow the black code style guidelines when making changes to the codebase.
-

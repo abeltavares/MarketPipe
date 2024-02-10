@@ -6,14 +6,6 @@ import logging
 from typing import Dict, List
 from abc import ABC, abstractmethod
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARNING,
-    format="[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s",
-)
-
-logger = logging.getLogger(__name__)
-
 
 class BaseApiClient(ABC):
 
@@ -206,7 +198,7 @@ class StockApiClient(BaseApiClient):
 
 
 class CryptoApiClient(BaseApiClient):
-    def __init__(self, COIN_API_KEY: str, logger: logging.Logger = None):
+    def __init__(self, COIN_API_KEY: str, logger: logging.Logger):
         super().__init__(logger=logger)
         self.COIN_API_KEY = COIN_API_KEY
 
@@ -353,7 +345,7 @@ class Storage:
         database: str,
         user: str,
         password: str,
-        logger: logging.Logger = logger,
+        logger: logging.Logger,
     ):
         self.host = host
         self.port = port
@@ -454,7 +446,7 @@ class MarketDataEngine:
         self,
         api_client: BaseApiClient,
         db_connector: "Storage",
-        logger: logging.Logger = logger,
+        logger: logging.Logger,
     ):
         self.api_client = api_client
         self.db_connector = db_connector
