@@ -15,6 +15,8 @@ The pipeline follows object-oriented programming principles to ensure modularity
 
 Unit testing is implemented throughout the workflow to ensure the reliability and efficiency of the pipeline. These tests validate the functionality of each component and help identify any potential issues or bugs.
 
+![architecture](assets/architecture.png)
+
 ## Project Components
 
 
@@ -109,46 +111,10 @@ graph TD;
 ```
 <br>
 
-- `docker-compose.yml`: Defines the services and configures the project's containers, setting up the environment (postgres, pgadmin, airflow).
+- `docker-compose.yml`: Defines the services and configures the project's containers, setting up the environment (python, postgres, pgadmin, airflow).
 
 The `MarketDataEngine` class within `core/market_data_processor.py` encapsulates the logic for retrieving and storing market data. The `market_data_dag.py` file within the `dags` directory sets up the Apache Airflow DAGs for collecting and storing market data.
-<br>
-```mermaid
-graph TD;
-    subgraph MarketTrackPipe
-        A((Airflow))
-        D(Docker)
-        P(PostgreSQL)
-        G(pgAdmin)
-    end
-    subgraph Core
-        MDE(MarketDataEngine)
-        SAPI(StockApiClient)
-        CAPI(CryptoApiClient)
-        STR(Storage)
-    end
-    subgraph Dags
-        MD_DAG_stocks(process_stock_data)
-        MD_DAG_crypto(process_crypto_data)
-    end
 
-    D --> A & P & G
-    P --> G
-    A --> Dags
-    Dags -->  MDE
-    MDE --> SAPI & CAPI
-    SAPI & CAPI --> API
-    API --> SAPI & CAPI
-    SAPI & CAPI --> STR
-    STR --> P
-
-    style A fill:#f9f,stroke:#333,stroke-width:4px;
-    style D fill:#bbf,stroke:#333,stroke-width:2px;
-    style P fill:#f9f,stroke:#333,stroke-width:4px;
-    style MDE fill:#f9f,stroke:#333,stroke-width:4px;
-    style MD_DAG_stocks fill:#f9f,stroke:#333,stroke-width:4px;
-    style MD_DAG_crypto fill:#f9f,stroke:#333,stroke-width:4px;
-```
 
 ## Requirements
 
@@ -228,10 +194,6 @@ The APIs used in this project are provided by [Alpha Vantage](https://www.alphav
 
 This project is open to contributions. If you have any suggestions or improvements, please feel free to create a pull request.
 
-## Copyright
-© 2023 Abel Tavares
-
-
 The codebase of this project follows the [black](https://github.com/psf/black) code style. To ensure consistent formatting, the [pre-commit](https://pre-commit.com/) hook is set up to run the black formatter before each commit.
 
 Additionally, a GitHub Action is configured to automatically run the black formatter on every pull request, ensuring that the codebase remains formatted correctly.
@@ -239,3 +201,7 @@ Additionally, a GitHub Action is configured to automatically run the black forma
 Please make sure to run `pip install pre-commit` and `pre-commit install` as mentioned in the setup instructions to enable the pre-commit hook on your local development environment.
 
 Contributors are encouraged to follow the black code style guidelines when making changes to the codebase.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE.txt).
