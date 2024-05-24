@@ -2,8 +2,9 @@ import requests
 import logging
 from dotenv import load_dotenv
 import os
-from base_api import BaseApiClient
-from utils.market_data_processor_utils import read_json
+from core.base_api import BaseApiClient
+from pysertive import invariant
+from utils import read_json, validate_symbols
 
 
 COIN_BASE_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?"
@@ -12,6 +13,7 @@ COIN_BASE_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/la
 load_dotenv()
 
 
+@invariant(validate_symbols, exception_type=ValueError, message="No Assets Provided")
 class CryptoApiClient(BaseApiClient):
     """
     A client for retrieving cryptocurrency data from the CoinMarketCap API.
@@ -33,7 +35,7 @@ class CryptoApiClient(BaseApiClient):
             logger (logging.Logger): The logger object for logging messages.
         """
         super().__init__(logger=logger)
-        self.symbols = read_json("mdp_config.json")['assets']['cryptos']['symbols']
+        self.symbols = read_json("mdp_config.json")["assets"]["cryptos"]["symbols"]
 
     def get_data(self) -> dict[str, dict[str, any]]:
         """
@@ -48,7 +50,7 @@ class CryptoApiClient(BaseApiClient):
             "convert": "USD",
             "sort": "percent_change_24h",
         }
-
+        print(os.getenv("COIN_API_KEY"))
         headers = {
             "Accepts": "application/json",
             "X-CMC_PRO_API_KEY": os.getenv("COIN_API_KEY"),
@@ -58,9 +60,11 @@ class CryptoApiClient(BaseApiClient):
 
         for symbol in self.symbols:
             try:
-                parameters["symbol"] = symbol
+                # parameters["symbol"] = symbol
 
-                response = requests.get(COIN_BASE_URL, headers=headers, params=parameters)
+                response = requests.get(
+                    COIN_BASE_URL, headers=headers, params=parameters
+                )
                 response.raise_for_status()
 
                 data = response.json()
@@ -80,14 +84,17 @@ class CryptoApiClient(BaseApiClient):
 
                 self.logger.info(f"Successfully retrieved data for symbol {symbol}.")
             except requests.exceptions.RequestException as req_error:
-                self.logger.error(
-                    f"Error during API request for {symbol}: {req_error}"
-                )
+                self.logger.error(f"Error during API request for {symbol}: {req_error}")
                 raise
             except (IndexError, KeyError) as data_error:
-                self.logger.error(
-                    f"Error processing data for {symbol}: {data_error}"
-                )
+                self.logger.error(f"Error processing data for {symbol}: {data_error}")
                 raise
 
         return crypto_data
+
+
+if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
+    client = CryptoApiClient(logger)
+    data = client.get_data()
+    print(data)

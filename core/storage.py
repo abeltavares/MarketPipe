@@ -3,6 +3,8 @@ import logging
 from dotenv import load_dotenv
 import os
 
+SCHEMA_NAME = "market_data"
+
 load_dotenv()
 
 
@@ -71,7 +73,7 @@ class Storage:
                         )
 
                     self.cur.execute(
-                        f"INSERT INTO {table} (symbol, name, market_cap, volume, price, change_percent) VALUES (%s, %s, %s, %s, %s, %s)",
+                        f"INSERT INTO {SCHEMA_NAME}.{table} (symbol, name, market_cap, volume, price, change_percent) VALUES (%s, %s, %s, %s, %s, %s)",
                         (symbol, name, market_cap, volume, price, change_percent),
                     )
 
@@ -87,8 +89,6 @@ class Storage:
             )
             if self.conn:
                 self.conn.rollback()
+            raise
         finally:
             self._close()
-
-
-
