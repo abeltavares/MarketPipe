@@ -1,0 +1,34 @@
+{
+    "owner": "airflow",
+    "account_id": 1234567,
+    "email_on_failure": false,
+    "email_on_retry":  false,
+    "retries": 0,
+    "clients": {
+        "stocks": {
+            "module": "core.stock_api_client",
+            "class": "StockApiClient"
+        },
+        "cryptos":{
+            "module": "core.crypto_api_client",
+            "class": "CryptoApiClient"
+        }
+    },
+    "assets": {
+        "stocks": {
+            "symbols": [
+                "AAPL",
+                "GOOG",
+                "MSFT"
+            ],
+            "schedule_interval": "29 22 * * *"
+        },
+        "cryptos": {
+            "symbols": [
+                "BTC",
+                "ETH"
+            ],
+            "schedule_interval": "29 22 * * *"
+        }
+    }
+}
