@@ -1,0 +1,6 @@
+airflow==2.8.0
+requests==2.26.0
+psycopg2-binary==2.9.1
+python-dotenv==0.19.2
+pre-commit==3.6.0
+pysertive==0.0.1
