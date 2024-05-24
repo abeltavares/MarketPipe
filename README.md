@@ -1,196 +1,257 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white)
 ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
-![PgAdmin](https://img.shields.io/badge/PgAdmin-4B0082?style=for-the-badge&logo=pgAdmin&logoColor=white)
 
 
 [![Powered by PostgreSQL](https://img.shields.io/badge/powered%20by-PostgreSQL-blue.svg)](https://www.postgresql.org/)
 [![Python Version](https://img.shields.io/badge/python-3.x-brightgreen.svg)](https://www.python.org/downloads/)
 
 
-# MarketTrackPipe
+# MarketPipe
 
-MarketTrackPipe is an automated Apache Airflow data pipeline for collecting and storing stock and cryptocurrency market data. The pipeline retrieves daily data for the top 5 stocks and top 5 cryptocurrencies based on market performance from Alpha Vantage, Financial Modeling Prep, and CoinMarketCap APIs and stores it in a PostgreSQL database. The pipeline is containerized using Docker and written in Python 3.
+<p align="center">
+    <img src="assets/marketpipe_logo.png" alt="Marketpipe Logo">
+</p>
 
-The pipeline follows object-oriented programming principles to ensure modularity, maintainability, and extensibility. Each component of the pipeline is designed as a separate class with well-defined responsibilities.
+<p align="center">
+    <a href="https://github.com/abeltavares/postql">
+        <img src="https://img.shields.io/badge/GitHub-Repository-blue?logo=github" alt="GitHub Repository">
+    </a>
+    <a href="https://pypi.org/project/PostQL/">
+        <img src="https://img.shields.io/pypi/v/PostQL" alt="PyPI Version">
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+        <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License">
+    </a>
+</p>
 
-Unit testing is implemented throughout the workflow to ensure the reliability and efficiency of the pipeline. These tests validate the functionality of each component and help identify any potential issues or bugs.
+<br>
+
+
+Containerized Apache Airflow etl pipeline for collecting and storing stock and cryptocurrency market data following object-oriented programming and unit testing framework.
+
+## 🏛 Architecture
+
+Below is the default architecture diagram of the MarketPipe system, illustrating the flow of data from source to storage:
 
 ![architecture](assets/architecture.png)
 
-## Project Components
+## 🌟 Features
+
+- **Dynamic Data Source Integration**: Extend and customize by plugging in new data sources with ease. Just drop in a module, and you're set!
+- **Automated Data Workflows**: Let Airflow do the heavy lifting with scheduled data collection, so you can focus on making strategic decisions.
+- **Containerized from the Start**: Dockerized setup means you get up and running in no time, maintaining consistency across all environments.
+- **User-Centric Configuration**: Tailor everything via `mdp_config.json` to fit your unique needs, whether it’s tweaking the assets or adjusting the schedule.
+- **Built-In Security**: We take security seriously, so you're covered from the ground up with best practices in secure data handling.
+- **Design by Contract with Pysertive**: We use the [Pysertive](https://github.com/abeltavares/pysertive) library to enforce and invariants in our code. This ensures that stocks and cryptos are provided in the configuration file, enhancing the robustness and reliability of our application.
 
 
+## 🧩 Project Components
+
+MarketPipe is structured with clarity and modularity in mind. Here's what you'll find inside:
+
+```plaintext
+MarketTrackPipe/
+├── core/                              # The heart of MarketTrackPipe's logic
+│   ├── base_api.py                    # Defines the BaseApiClient abstract base class and ApiClientFactory
+│   ├── crypto_api_client.py           # Retrieves cryptocurrency data
+│   ├── data_processor.py              # Orchestrates the data retrieval and storage
+│   ├── __init__.py                    # Marks the directory as a Python package
+│   ├── stock_api_client.py            # Retrieves stock market data
+│   └── storage.py                     # Manages the storage of market data
+├── custom/                            # A place for custom extensions and modules
+│   ├── __init__.py                    # Marks the directory as a Python package
+│   └── stock_api_client.py            # Custom stock API client
+├── dags/                              # Contains the Airflow DAG definitions
+│   └── market_data_dag.py             # Defines the DAG for processing market data
+├── database_setup/                    # SQL scripts for database initialization
+│   └── init.sql                       # SQL script for initializing the database
+├── docker/                            # Dockerfiles for container setup
+│   ├── airflow/
+│   │   ├── Dockerfile                 # Dockerfile for the Airflow service
+│   │   └── requirements.txt           # Python dependencies for the Airflow service
+├── docker-compose.yaml                # Docker Compose configuration for services
+├── mdp_config.json                    # Configuration file for the pipeline
+├── requirements.txt                   # Python dependencies for the entire project
+├── tests/                             # Test cases for the application's components
+│   ├── dags_test.py                   # Tests for the Airflow DAGs
+│   ├── test_crypto_api_client.py      # Tests for the CryptoApiClient class
+│   ├── test_stock_api_client.py       # Tests for the StockApiClient class
+│   ├── test_base_api_client.py        # Tests for the BaseApiClient class (to be done)
+│   ├── test_data_processor.py         # Tests for the DataProcessor class (to be done)
+│   └── test_storage.py                # Tests for the Storage class
+└── utils/                             # Utility functions and helper scripts
+    ├── __init__.py
+    └── market_data_processor_utils.py  # Utility functions for the MarketTrackPipe
 ```
-   ├── core
-   │   ├── __init__.py
-   │   └── market_data_processor.py
-   ├── dags
-   │   └── market_data_dag.py
-   ├── docker-compose.yaml
-   ├── init.sql
-   └── tests
-      ├── dags_test.py
-      └── tests_market_data_processor.py
-```
+### Core
 
-- `core`: Contains core functionality for processing market data.
-```mermaid
-classDiagram
-class BaseApiClient {
-    <<abstract>>
-    +logger: logging.Logger
-    <<abstractmethod>>
-    +@abstractmethod get_data(): Dict[str, List[str]]
-}
-class StockApiClient {
-    +ALPHA_API_KEY: str
-    +PREP_API_KEY: str
-    +ALPHA_BASE_URL: str
-    +PREP_BASE_URL: str
-    +logger: logging.Logger
-    +get_stocks(): Dict[str, List[str]]
-    +get_data(symbols: Dict[str, List[str]]): Dict[str, List[Dict]]
-}
-class CryptoApiClient {
-    +COIN_API_KEY: str
-    +logger: logging.Logger
-    +get_data(): Dict[str, List[Dict]]
-}
-class Storage {
-    +host: str
-    +port: int
-    +database: str
-    +user: str
-    +password: str
-    +conn
-    +cur
-    +logger: logging.Logger
-    +_connect()
-    +_close()
-    +store_data(data: Dict[str, List[Dict[str, any]]], data_type: str): None
-}
-class MarketDataEngine {
-    +api_client: BaseApiClient
-    +db_connector: Storage
-    +logger: logging.Logger
-    +process_stock_data()
-    +process_crypto_data()
-}
-BaseApiClient <|-- StockApiClient
-BaseApiClient <|-- CryptoApiClient
-MarketDataEngine "1" --> "1" BaseApiClient
-MarketDataEngine "1" --> "1" Storage
-```
-<br>
+The `core` directory is where the main logic of the project resides:
 
-- `dags`: Contains the Apache Airflow DAG definitions for orchestrating the data collection and storage process.
-- `tests`: Contains the unit tests for testing individual components of the project.
-- `init.sql`: SQL script for creating and initializing the database schema.
-```mermaid
-graph TD;
-    subgraph DB
-        schema[market_data]
-        stock[stock_data]
-        crypto[crypto_data]
-    end
-    subgraph Fields
-        date_collected
-        symbol
-        name
-        market_cap
-        volume
-        price
-        change_percent
-    end
+- `base_api.py`: Hosts the `BaseApiClient` abstract base class that serves as the foundation for all API clients. It also contains the `ApiClientFactory` for creating instances of API clients dynamically.
+- `crypto_api_client.py`: Implements the `CryptoApiClient` class, inheriting from `BaseApiClient` and fetching cryptocurrency data using the CoinMarketCap API.
+- `data_processor.py`: The `DataProcessor` class within orchestrates the retrieval and storage of market data, coordinating between API clients and storage mechanisms.
+- `stock_api_client.py`: The `StockApiClient` class, also inheriting from `BaseApiClient`, pulls stock data from APIs such as Alpha Vantage and Financial Modeling Prep.
+- `storage.py`: The `Storage` class handles all interactions with the database, ensuring market data is stored reliably and efficiently.
 
-    schema --> |Schema| stock & crypto
+### Custom
 
-    stock & crypto -->|Table| gainers & losers & actives
+The `custom` directory is designed to house custom user-defined modules:
 
-    gainers & losers & actives --> Fields
-```
-<br>
+- Place any custom API client modules here, and they will be dynamically loaded into MarketPipe based on your `mdp_config.json` settings.
 
-- `docker-compose.yml`: Defines the services and configures the project's containers, setting up the environment (python, postgres, pgadmin, airflow).
+   *Note*: Any custom API client must inherit from the `BaseApiClient` class.
 
-The `MarketDataEngine` class within `core/market_data_processor.py` encapsulates the logic for retrieving and storing market data. The `market_data_dag.py` file within the `dags` directory sets up the Apache Airflow DAGs for collecting and storing market data.
+### DAGs
+
+In the `dags` directory, you'll find Airflow DAGs that define the project's workflow automation:
+
+- `market_data_dag.py`: Contains the DAG definition for orchestrating the market data collection and storage processes.
+
+### Database Setup
+
+The `database_setup` directory has the SQL scripts needed to get your database up and ready:
+
+- `init.sql`: This initialization script sets up the database schema, creating the necessary tables and relationships for MarketPipe.
+
+### Docker
+
+The `docker` directory includes Dockerfiles and related configurations for building the project's containers:
+
+- `airflow/Dockerfile`: Defines the Airflow service's container, specifying the required Python environment and dependencies.
+- `airflow/requirements.txt`: Lists all Python packages needed by the Airflow service.
+
+### Docker Compose
+
+The `docker-compose.yaml` file orchestrates the setup of all related services, ensuring that each container is configured correctly and linked properly for the pipeline to function.
+
+### Tests
+
+The `tests` directory provides a suite of unit tests that ensure each component of MarketPipe is functioning as expected:
+
+- `dags_test.py`: Tests the Airflow DAGs to verify that they execute without errors.
+- `test_data_processor.py`: Validates the `DataProcessor` class and ensures data is processed accurately. (to be done)
+- `test_base_api_client.py`: Tests the `BaseApiClient` abstract base class to ensure it functions as expected. (to be done)
+- `test_stock_api_client.py`: Tests the `StockApiClient` class to ensure it retrieves stock data correctly.
+- `test_crypto_api_client.py`: Tests the `CryptoApiClient` class to ensure it retrieves cryptocurrency data correctly.
+
+### Utils
+
+The `utils` directory contains helper scripts and utility functions that aid various aspects of the pipeline:
+
+- `market_data_processor_utils.py`: Offers utility functions for common data processing tasks within MarketPipe.
+
+By understanding each component and how they fit into the MarketPipe ecosystem, contributors can effectively navigate the project and add value through their enhancements and features.
 
 
-## Requirements
+✔️ Requirements
+---------------
 
 - [Docker](https://www.docker.com/get-started)
 - [pre-commit](https://pre-commit.com/) (Developer)
 
 
-## Setup
+🚀 Setup
+---------------
 
 1. Clone the repository:
 
    ```bash
-    git clone https://github.com/abeltavares/MarketTrackPipe.git
+    git clone https://github.com/abeltavares/marketpipe.git
    ```
 
-2. Create an '.env' file in the project's root directory with the required environment variables (refer to the example .env file in the project).
+2. Environment Setup:
 
-3. Start the Docker containers:
+- Configure your `.env` from `.env.example`.
+
+3. Fire It Up:
 
    ```bash
     docker-compose up
    ```
 
-4. Access the Airflow web server:
-
-   Go to the Airflow web UI at http://localhost:8080 and turn on the DAGs.
-
-   Alternatively, you can trigger the DAG manually by running the following command in your terminal:
-
-   ```bash
-    airflow trigger_dag data_collection_storage_stocks
-    airflow trigger_dag data_collection_storage_crypto
-   ```
-
-## Setting up Pre-commit Hooks (Developer Setup)
-
-To ensure code quality and run unit tests before committing changes, MarketTrackPipe uses [pre-commit](https://pre-commit.com/) hooks. Follow these steps to set it up:
-
-1. Install `pre-commit` by running the following command in your terminal:
-
-   ```bash
-    pip install pre-commit
-   ```
-
-2. Run the following command to set up pre-commit:
-
-   ```bash
-    pre-commit install
-   ```
-   
-   This will install the pre-commit hook into your git repository.
-<br>
-
-3. Now, every time you commit changes, pre-commit will automatically run unit tests to ensure code quality. Additionally, these tests are also executed in a GitHub Actions workflow on every pull request to the repository.
-
-## Usage
+🚀 Installation
+---------------
 
 After setting up the workflow, you can access the Apache Airflow web UI to monitor the status of the tasks and the overall workflow.
 
-To access the data stored in the PostgreSQL database, you have two options:
+To access the data stored in the PostgreSQL database you can go with:
 
-1. **Command-line tool `psql`**: You can use `psql` to run SQL queries directly. Find the database credentials and connection information in the '.env' file. Use the following command in your terminal to connect to the database:
+**Command-line tool `psql`**: You can use `psql` to run SQL queries directly. Find the database credentials and connection information in the '.env' file. Use the following command in your terminal to connect to the database:
 
    ```bash
     docker exec -it [host] psql -U [user] -d market_data  
    ```
-2. Use `pgAdmin`, a web-based visual interface. To access it, navigate to http://localhost:5050 in your web browser and log in using the credentials defined in the `.env` file in the project root directory. From there, you can interactively browse the tables created by the pipeline, run queries, and extract the desired data for analysis or visualization.
-
-Choose the option that suits you best depending on your familiarity with SQL and preference for a graphical or command-line interface.
-
-## Acknowledgments 
-
-The APIs used in this project are provided by [Alpha Vantage](https://www.alphavantage.co/documentation/), [Financial Modeling Prep](https://financialmodelingprep.com/developer/docs/), and [CoinMarketCap](https://coinmarketcap.com/api/documentation/v1/). Please refer to their documentation for more information on their APIs.
 
 
-## Contributions
+⚙ Configuration
+---------------
+
+Make it yours by tweaking the `mdp_config.json`:
+
+```json
+{
+    "owner": "airflow",
+    "email_on_failure": false,
+    "email_on_retry":  false,
+    "retries": 0,
+    "clients": {
+        "stocks": {
+            "module": "core.stock_api_client",
+            "class": "StockApiClient"
+        },
+        "cryptos":{
+            "module": "core.crypto_api_client",
+            "class": "CryptoApiClient"
+        }
+    },
+    "assets": {
+        "stocks": {
+            "symbols": [
+                "AAPL",
+                "GOOG",
+                "MSFT"
+            ],
+            "schedule_interval": "29 22 * * *"
+        },
+        "cryptos": {
+            "symbols": [
+                "BTC",
+                "ETH"
+            ],
+            "schedule_interval": "29 22 * * *"
+        }
+    }
+}
+
+```
+
+To add a new API client:
+
+1.  Create a new Python file under the `custom/` directory.
+2.  Implement an API client class extending `BaseApiClient`.
+3.  Update `mdp_config.json` to register your new client class.
+
+
+🌱 Future Work
+--------------
+
+-   Front-End Dashboard: 
+Developing a sleek, user-friendly dashboard to visualize data trends and insights.
+-   Broader Data Source Support: 
+Expanding beyond financial data into other use cases.
+- Cloud Infrastructure Integration:
+Integrate cloud infrastructure provisioning. 
+
+- Advanced Data Storage Solutions:
+Integrate ingestion of data into configurable lakes and data warehouses.
+
+## TODO
+
+- [ ] Add tests for the DataProcessor class
+- [ ] Add tests for the BaseApiClient class
+
+🤝 Contributing
+--------------
 
 This project is open to contributions. If you have any suggestions or improvements, please feel free to create a pull request.
 
@@ -202,6 +263,9 @@ Please make sure to run `pip install pre-commit` and `pre-commit install` as men
 
 Contributors are encouraged to follow the black code style guidelines when making changes to the codebase.
 
-## License
+Please make sure to check out our [Contribution Guidelines](CONTRIBUTING.md) before making a pull request.
+
+📜 License
+--------------
 
 This project is licensed under the [MIT License](LICENSE.txt).
