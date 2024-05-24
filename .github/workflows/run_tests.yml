@@ -30,6 +30,7 @@ jobs:
           pip install apache-airflow[cncf.kubernetes]
           pip install pandas
           pip install Flask-Session==0.5.0
+          pip install pysertive
 
       - name: Initialize Airflow database
         run: airflow db migrate
