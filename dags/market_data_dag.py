@@ -1,97 +1,47 @@
-import os
-import sys
+from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.models import DAG
 from datetime import datetime
-from dotenv import load_dotenv
 import logging
+from utils.market_data_processor_utils import read_json
+from core.data_processor import DataProcessor
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARNING,
-    format="[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s",
-)
+config = read_json("mdp_config.json")
 
-logger = logging.getLogger(__name__)
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Find the parent directory
-parent_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(parent_dir)
-
-# Add the project root to the Python path
-sys.path.insert(0, project_root)
-
-from core.market_data_processor import (
-    StockApiClient,
-    CryptoApiClient,
-    Storage,
-    MarketDataEngine,
-)
-
-# Define default arguments for the DAGs
-default_args_stocks = {
-    "owner": "airflow",
+default_args = {
+    "owner": config.get("owner", "airflow"),
     "depends_on_past": False,
-    "start_date": datetime(2023, 3, 15),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
+    "start_date": datetime.now(),
+    "email_on_failure": config.get("email_on_failure", False),
+    "email_on_retry": config.get("email_on_retry", False),
+    "retries": config.get("retries", 1),
 }
 
-default_args_cryptos = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": datetime(2023, 3, 15),
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 0,
-}
 
-# Create instances of the classes
-stock_api_client = StockApiClient(
-    os.environ["ALPHA_API_KEY"], os.environ["PREP_API_KEY"], logger
-)
-crypto_api_client = CryptoApiClient(os.environ["COIN_API_KEY"], logger)
-db_connector = Storage(
-    os.getenv("POSTGRES_HOST"),
-    os.getenv("POSTGRES_PORT"),
-    os.getenv("POSTGRES_DB"),
-    os.getenv("POSTGRES_USER"),
-    os.getenv("POSTGRES_PASSWORD"),
-    logger,
-)
-stock_engine = MarketDataEngine(stock_api_client, db_connector, logger)
-crypto_engine = MarketDataEngine(crypto_api_client, db_connector, logger)
+def create_market_data_dag(asset_type, dag_id, description):
+    dag = DAG(
+        dag_id,
+        default_args=default_args,
+        schedule_interval=config["assets"][asset_type]["schedule_interval"],
+        description=description,
+    )
 
-# Create the DAG for stock data collection and storage
-dag_stocks = DAG(
-    "process_stock_data",
-    default_args=default_args_stocks,
-    schedule_interval="0 23 * * 1-5",  # Schedule to run everyday at 11 PM from Monday to Friday
-    description="Collect and store stock data",
-)
+    market_processor = DataProcessor(asset_type)
 
-# Create the DAG for cryptocurrency data collection and storage
-dag_cryptos = DAG(
-    "process_crypto_data",
-    default_args=default_args_cryptos,
-    schedule_interval="0 23 * * *",  # Schedule to run everyday at 11 PM
-    description="Collect and store cryptocurrency data",
-)
+    with dag:
+        get_data_task = PythonOperator(
+            task_id=f"get_{asset_type}_data",
+            python_callable=market_processor.get_data,
+        )
 
-# Define the task for stock data collection and storage
-process_stock_data_task = PythonOperator(
-    task_id="get_stocks",
-    python_callable=stock_engine.process_stock_data,
-    dag=dag_stocks,
-)
+        store_data_task = PythonOperator(
+            task_id=f"store_{asset_type}_data",
+            python_callable=market_processor.store_data,
+        )
 
-# Define the tasks for cryptocurrency data collection and storage
-process_crypto_data_task = PythonOperator(
-    task_id="get_crypto",
-    python_callable=crypto_engine.process_crypto_data,
-    dag=dag_cryptos,
-)
+        get_data_task >> store_data_task
+
+    return dag
+
+
+create_market_data_dag("stocks", "process_stock_data", "Collect and store stock data")
+create_market_data_dag("cryptos", "process_crypto_data", "Collect and store crypto data")
