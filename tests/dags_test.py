@@ -3,10 +3,12 @@ import sys
 import unittest
 from unittest.mock import patch
 from airflow.models import DagBag
-from airflow.operators.python import PythonOperator
 import logging
-from core.market_data_processor import StockApiClient, CryptoApiClient, Storage
-from dags.market_data_dag import process_crypto_data_task, process_stock_data_task
+from dags.market_data_dag import create_market_data_dag
+
+from core.crypto_api_client import CryptoApiClient
+from core.stock_api_client import StockApiClient
+from core.storage import Storage
 
 logging.getLogger("airflow").setLevel(logging.ERROR)
 
@@ -25,8 +27,12 @@ class TestMarketDataDag(unittest.TestCase):
 
     def setUp(self):
         with patch(
-            "dags.market_data_dag.read_json",
+            "utils.read_json",
             return_value={
+                "owner": "airflow",
+                "email_on_failure": False,
+                "email_on_retry": False,
+                "retries": 1,
                 "assets": {
                     "stocks": {"symbols": ["BREPE"], "schedule_interval": "0 13 * * *"},
                     "cryptos": {
@@ -42,6 +48,10 @@ class TestMarketDataDag(unittest.TestCase):
             self.stock_dag_id = "process_stock_data"
             self.crypto_dag_id = "process_crypto_data"
 
+            self.stock_dag = create_market_data_dag("stocks", "process_stock_data", "Collect and store stock data")
+            self.crypto_dag = create_market_data_dag("cryptos", "process_crypto_data",
+                                                     "Collect and store crypto data")
+
     def test_dag_stocks_exists(self):
         self.assertIn(self.stock_dag_id, self.dagbag.dags)
 
@@ -49,7 +59,7 @@ class TestMarketDataDag(unittest.TestCase):
         dag = self.dagbag.get_dag(self.stock_dag_id)
         self.assertDictEqual(self.dagbag.import_errors, {})
         self.assertIsNotNone(dag)
-        self.assertEqual(len(dag.tasks), 1)
+        self.assertEqual(len(dag.tasks), 2)
 
     def test_dag_stocks_schedule_interval(self):
         dag = self.dagbag.get_dag(self.stock_dag_id)
@@ -58,14 +68,11 @@ class TestMarketDataDag(unittest.TestCase):
     @patch.object(StockApiClient, "get_data")
     @patch.object(Storage, "store_data")
     def test_process_stock_data_task(self, mock_store_data, mock_get_data):
-        task_id = "get_stocks"
+        get_data_task = self.stock_dag.get_task("get_stocks_data")
+        store_data_task = self.stock_dag.get_task("store_stocks_data")
 
-        test = PythonOperator(
-            task_id=task_id,
-            python_callable=process_stock_data_task.python_callable,
-        )
-
-        test.execute(context={})
+        get_data_task.execute(context={})
+        store_data_task.execute(context={"task_instance": get_data_task.output})
 
         mock_get_data.assert_called_once()
         mock_store_data.assert_called_once()
@@ -77,7 +84,7 @@ class TestMarketDataDag(unittest.TestCase):
         dag = self.dagbag.get_dag(self.crypto_dag_id)
         self.assertDictEqual(self.dagbag.import_errors, {})
         self.assertIsNotNone(dag)
-        self.assertEqual(len(dag.tasks), 1)
+        self.assertEqual(len(dag.tasks), 2)
 
     def test_dag_cryptos_schedule_interval(self):
         dag = self.dagbag.get_dag(self.crypto_dag_id)
@@ -86,15 +93,11 @@ class TestMarketDataDag(unittest.TestCase):
     @patch.object(CryptoApiClient, "get_data")
     @patch.object(Storage, "store_data")
     def test_process_crypto_data_task(self, mock_get_crypto_data, mock_store_data):
-        mock_get_crypto_data.return_value = {}
-        task_id = "get_crypto"
+        get_data_task = self.crypto_dag.get_task("get_cryptos_data")
+        store_data_task = self.crypto_dag.get_task("store_cryptos_data")
 
-        test = PythonOperator(
-            task_id=task_id,
-            python_callable=process_crypto_data_task.python_callable,
-        )
-
-        test.execute(context={})
+        get_data_task.execute(context={})
+        store_data_task.execute(context={"task_instance": get_data_task.output})
 
         mock_get_crypto_data.assert_called_once()
         mock_store_data.assert_called_once()

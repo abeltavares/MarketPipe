@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import logging
-from utils import market_data_processor_utils
 from core.crypto_api_client import CryptoApiClient
 
 
