@@ -39,7 +39,7 @@ class TestMarketDataDag(unittest.TestCase):
                         "symbols": ["BTC", "ETH"],
                         "schedule_interval": "0 13 * * *",
                     },
-                }
+                },
             },
         ):
             self.dagbag = DagBag(
@@ -48,9 +48,12 @@ class TestMarketDataDag(unittest.TestCase):
             self.stock_dag_id = "process_stock_data"
             self.crypto_dag_id = "process_crypto_data"
 
-            self.stock_dag = create_market_data_dag("stocks", "process_stock_data", "Collect and store stock data")
-            self.crypto_dag = create_market_data_dag("cryptos", "process_crypto_data",
-                                                     "Collect and store crypto data")
+            self.stock_dag = create_market_data_dag(
+                "stocks", "process_stock_data", "Collect and store stock data"
+            )
+            self.crypto_dag = create_market_data_dag(
+                "cryptos", "process_crypto_data", "Collect and store crypto data"
+            )
 
     def test_dag_stocks_exists(self):
         self.assertIn(self.stock_dag_id, self.dagbag.dags)

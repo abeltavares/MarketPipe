@@ -1,10 +1,14 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+import logging
 from datetime import datetime
 from utils import read_json
 from core.data_processor import DataProcessor
+from core.base_api import ApiClientFactory
+from core.storage import Storage
 
 CONFIG = read_json("mdp_config.json")
+print(CONFIG)
 
 default_args = {
     "owner": CONFIG.get("owner", "airflow"),
@@ -24,7 +28,15 @@ def create_market_data_dag(asset_type, dag_id, description):
         description=description,
     )
 
-    market_processor = DataProcessor(asset_type)
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("DataPipeline")
+
+    api_client_factory = ApiClientFactory(logger)
+    db_connector = Storage(logger)
+
+    market_processor = DataProcessor(
+        asset_type, api_client_factory, db_connector, logger
+    )
 
     with dag:
         get_data_task = PythonOperator(
